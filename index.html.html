@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Editorial — Ximena & Hoxa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF7F2; --surface:#ffffff; --text:#1a1a1a; --muted:#8a8378;
+    --accent:#D14545; --accent-dim:#f1d9d4; --line:#e8e1d6;
+    --font-display:"Poppins", sans-serif;
+    --font-body:"Poppins", sans-serif;
+    --font-label:"Poppins", sans-serif;
+    --radius:2px;
+  }
+  body.theme-hoxa{
+    --bg:#0a0a0a; --surface:#141414; --text:#f2f0ec; --muted:#8a8578;
+    --accent:#c9a35c; --accent-dim:#2a2416; --line:#2a2a2a;
+  }
+  body.theme-cal{
+    --bg:#F3EFE8; --surface:#ffffff; --text:#1a1a1a; --muted:#8a8378;
+    --accent:#8a5a3f; --accent-dim:#eee3d6; --line:#e2dbcd;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--font-body);
+    transition:background .35s ease,color .35s ease; min-height:100vh;
+  }
+  ::selection{background:var(--accent); color:var(--bg);}
+
+  /* ---- top nav ---- */
+  .topbar{
+    position:sticky; top:0; z-index:40; background:var(--bg);
+    border-bottom:1px solid var(--line); padding:14px 20px 0;
+    transition:background .35s ease,border-color .35s ease;
+  }
+  .brandrow{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px;}
+  .brand{font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:.02em;}
+  body.theme-hoxa .brand{font-weight:600; letter-spacing:.04em;}
+  body.theme-cal .brand{font-weight:600; letter-spacing:.02em;}
+  .subline{font-size:11px; color:var(--muted); font-family:var(--font-label); letter-spacing:.08em; text-transform:uppercase;}
+  .tabs{display:flex; gap:4px;}
+  .tab{
+    padding:10px 16px; font-family:var(--font-label); font-size:14px; letter-spacing:.04em;
+    text-transform:uppercase; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent;
+    background:none; border-top:none; border-left:none; border-right:none; user-select:none;
+  }
+  .tab.active{color:var(--text); border-bottom-color:var(--accent); font-weight:600;}
+  .tab .count{
+    display:inline-block; margin-left:6px; font-size:10px; padding:1px 6px; border-radius:20px;
+    background:var(--accent-dim); color:var(--accent); font-family:var(--font-body);
+  }
+
+  .wrap{max-width:1180px; margin:0 auto; padding:22px 20px 80px;}
+
+  /* ---- toolbar ---- */
+  .toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:22px;}
+  .filters{display:flex; gap:8px; flex-wrap:wrap;}
+  select, input[type=text], input[type=date], textarea{
+    font-family:var(--font-body); background:var(--surface); color:var(--text);
+    border:1px solid var(--line); border-radius:var(--radius); padding:8px 10px; font-size:13px;
+  }
+  select:focus, input:focus, textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .btn{
+    font-family:var(--font-label); letter-spacing:.04em; text-transform:uppercase; font-size:13px;
+    background:var(--accent); color:var(--bg); border:none; padding:10px 18px; border-radius:var(--radius);
+    cursor:pointer; font-weight:600; white-space:nowrap;
+  }
+  body.theme-hoxa .btn{color:#0a0a0a;}
+  .btn.ghost{background:none; color:var(--text); border:1px solid var(--line);}
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:translateY(1px);}
+
+  /* ---- board ---- */
+  .board{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media(max-width:900px){.board{grid-template-columns:1fr;}}
+  .column{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); min-height:120px;}
+  .column h3{
+    font-family:var(--font-label); letter-spacing:.05em; text-transform:uppercase; font-size:14px;
+    margin:0; padding:14px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; color:var(--muted);
+  }
+  .column h3 span.n{color:var(--accent);}
+  .cardlist{padding:12px; display:flex; flex-direction:column; gap:10px; min-height:60px;}
+  .empty{font-size:12px; color:var(--muted); padding:16px; text-align:center; font-style:italic;}
+
+  .card{
+    background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px; cursor:pointer;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .card:hover{border-color:var(--accent); transform:translateY(-1px);}
+  .card .artist{font-family:var(--font-display); font-weight:700; font-size:16px; margin-bottom:2px;}
+  body.theme-hoxa .card .artist{font-weight:600;}
+  .card .meta{font-size:11px; color:var(--muted); font-family:var(--font-label); letter-spacing:.03em; text-transform:uppercase; margin-bottom:8px;}
+  .badges{display:flex; gap:6px; flex-wrap:wrap;}
+  .badge{font-size:10px; padding:3px 7px; border-radius:20px; font-family:var(--font-body); font-weight:600; letter-spacing:.02em;}
+  .b-ok{background:#dcefe0; color:#2f7a45;}
+  .b-mid{background:#fdf1d6; color:#a5751a;}
+  .b-no{background:#f6dede; color:#b3392f;}
+  body.theme-hoxa .b-ok{background:#173a24; color:#7ed99a;}
+  body.theme-hoxa .b-mid{background:#3a3016; color:#e0b95c;}
+  body.theme-hoxa .b-no{background:#3a1a17; color:#e08a7d;}
+
+  /* ---- calendar ---- */
+  .calhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .calhead .month{font-family:var(--font-display); font-size:24px; font-weight:700;}
+  .navbtn{background:none; border:1px solid var(--line); color:var(--text); width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:16px;}
+  .navbtn:hover{border-color:var(--accent); color:var(--accent);}
+  .legend{display:flex; gap:14px; font-size:12px; color:var(--muted); margin-bottom:14px; font-family:var(--font-label); letter-spacing:.03em; text-transform:uppercase;}
+  .dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px;}
+  .grid7{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+  .dow{font-size:10px; text-align:center; color:var(--muted); font-family:var(--font-label); letter-spacing:.05em; padding-bottom:4px;}
+  .daycell{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); min-height:84px;
+    padding:6px; font-size:11px; position:relative;
+  }
+  .daycell.out{opacity:.35;}
+  .daynum{font-family:var(--font-label); font-size:13px; color:var(--muted); margin-bottom:4px;}
+  .evt{
+    display:flex; align-items:center; gap:4px; font-size:10px; padding:2px 4px; border-radius:2px; margin-bottom:2px;
+    cursor:pointer; background:var(--bg); overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+  }
+  .evt-call{ font-style:italic; }
+  @media(max-width:700px){
+    .grid7{grid-template-columns:repeat(7,1fr); gap:3px;}
+    .daycell{min-height:56px; font-size:9px; padding:3px;}
+    .evt{font-size:8px;}
+  }
+
+  /* ---- modal ---- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:flex-start; justify-content:center;
+    z-index:100; padding:30px 16px; overflow-y:auto;
+  }
+  .overlay.open{display:flex;}
+  .modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); max-width:520px; width:100%;
+    padding:26px; margin-bottom:40px;
+  }
+  .modal h2{font-family:var(--font-display); font-size:22px; margin:0 0 18px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-family:var(--font-label); font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:5px;}
+  .field select, .field input, .field textarea{width:100%;}
+  .field textarea{resize:vertical; min-height:50px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .modal-actions{display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px;}
+  .danger{background:none; border:none; color:#b3392f; font-family:var(--font-label); letter-spacing:.03em; text-transform:uppercase; font-size:12px; cursor:pointer;}
+  .modal-right{display:flex; gap:8px;}
+  .closeX{position:absolute; top:14px; right:18px; background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer;}
+  .modal{position:relative;}
+
+  .fab{
+    position:fixed; bottom:24px; right:24px; z-index:50; width:56px; height:56px; border-radius:50%;
+    background:var(--accent); color:var(--bg); border:none; font-size:26px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+  body.theme-hoxa .fab{color:#0a0a0a;}
+</style>
+</head>
+<body class="theme-ximena">
+
+<div class="topbar">
+  <div class="brandrow">
+    <div>
+      <div class="brand" id="brandTitle">Ximena</div>
+      <div class="subline" id="brandSub">Agenda editorial — bimestral</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="ximena">Ximena <span class="count" id="cX">0</span></button>
+    <button class="tab" data-tab="hoxa">Hoxa <span class="count" id="cH">0</span></button>
+    <button class="tab" data-tab="cal">Calendário</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- BOARD VIEW (ximena / hoxa) -->
+  <div id="boardView">
+    <div class="toolbar">
+      <div class="filters">
+        <select id="filterTipo"><option value="">Todos os tipos</option></select>
+        <select id="filterEntrevista">
+          <option value="">Entrevista: todas</option>
+          <option value="video:agendada">Vídeo · agendada</option>
+          <option value="video:realizada">Vídeo · realizada</option>
+          <option value="escrita:aguardando_respostas">Escrita · aguardando respostas</option>
+          <option value="escrita:respostas_recebidas">Escrita · respostas recebidas</option>
+          <option value="escrita:transcrita">Escrita · transcrita</option>
+          <option value="indefinida">Sem modo definido</option>
+        </select>
+        <select id="filterFotos">
+          <option value="">Fotos: todas</option>
+          <option value="aguardando">Aguardando</option>
+          <option value="recebidas">Recebidas</option>
+          <option value="selecionadas">Selecionadas</option>
+        </select>
+      </div>
+      <button class="btn" id="btnAdd">+ Nova capa</button>
+    </div>
+
+    <div class="board">
+      <div class="column">
+        <h3>Planejamento <span class="n" id="n-planejamento">0</span></h3>
+        <div class="cardlist" id="col-planejamento"></div>
+      </div>
+      <div class="column">
+        <h3>Em produção <span class="n" id="n-producao">0</span></h3>
+        <div class="cardlist" id="col-producao"></div>
+      </div>
+      <div class="column">
+        <h3>Finalizada <span class="n" id="n-finalizada">0</span></h3>
+        <div class="cardlist" id="col-finalizada"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR VIEW -->
+  <div id="calView" style="display:none;">
+    <div class="calhead">
+      <button class="navbtn" id="prevMonth">‹</button>
+      <div class="month" id="calMonthLabel"></div>
+      <button class="navbtn" id="nextMonth">›</button>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:#D14545"></span>Ximena</span>
+      <span><span class="dot" style="background:#c9a35c"></span>Hoxa</span>
+      <span>— linha contínua: publicação · 🎥 tracejado: videochamada</span>
+    </div>
+    <div class="grid7" id="calDow"></div>
+    <div class="grid7" id="calGrid" style="margin-top:6px;"></div>
+  </div>
+
+</div>
+
+<button class="fab" id="fabAdd" title="Nova capa">+</button>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <button class="closeX" id="closeModal">×</button>
+    <h2 id="modalTitle">Nova capa</h2>
+    <input type="hidden" id="f-id">
+    <div class="field">
+      <label>Revista</label>
+      <select id="f-revista">
+        <option value="ximena">Ximena</option>
+        <option value="hoxa">Hoxa</option>
+      </select>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Artista / capa</label>
+        <input type="text" id="f-artista" placeholder="Nome do artista">
+      </div>
+      <div class="field">
+        <label>Tipo de edição</label>
+        <select id="f-tipo"></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Edição / referência</label>
+        <input type="text" id="f-edicao" placeholder="Ex: Jul-Ago 2026">
+      </div>
+      <div class="field">
+        <label>Data prevista</label>
+        <input type="date" id="f-data">
+      </div>
+    </div>
+    <div class="field">
+      <label>Status geral</label>
+      <select id="f-status">
+        <option value="planejamento">Planejamento</option>
+        <option value="producao">Em produção</option>
+        <option value="finalizada">Finalizada</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Fotos</label>
+      <select id="f-fotos">
+        <option value="aguardando">Aguardando</option>
+        <option value="recebidas">Recebidas</option>
+        <option value="selecionadas">Selecionadas</option>
+      </select>
+    </div>
+
+    <div class="field entrevista-block">
+      <label>Entrevista — como vai ser feita</label>
+      <select id="f-entrevistaModo">
+        <option value="">A definir</option>
+        <option value="escrita">Escrita</option>
+        <option value="videochamada">Videochamada</option>
+      </select>
+    </div>
+
+    <div class="row2" id="camposVideo" style="display:none;">
+      <div class="field">
+        <label>Data da chamada</label>
+        <input type="date" id="f-videoData">
+      </div>
+      <div class="field">
+        <label>Hora da chamada</label>
+        <input type="time" id="f-videoHora">
+      </div>
+    </div>
+    <div class="field" id="campoStatusVideo" style="display:none;">
+      <label>Status da videochamada</label>
+      <select id="f-videoStatus">
+        <option value="agendada">Agendada</option>
+        <option value="realizada">Realizada</option>
+      </select>
+    </div>
+
+    <div class="field" id="campoStatusEscrita" style="display:none;">
+      <label>Status da entrevista escrita</label>
+      <select id="f-escritaStatus">
+        <option value="aguardando_respostas">Aguardando respostas</option>
+        <option value="respostas_recebidas">Respostas recebidas</option>
+        <option value="transcrita">Transcrita</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Notas da entrevista</label>
+      <textarea id="f-notasEntrevista" placeholder="Contato, pauta, link da chamada..."></textarea>
+    </div>
+    <div class="field">
+      <label>Notas das fotos</label>
+      <textarea id="f-notasFotos" placeholder="Quem envia, formato, prazo..."></textarea>
+    </div>
+    <div class="field">
+      <label>Notas gerais</label>
+      <textarea id="f-notas" placeholder="Qualquer outra observação"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="danger" id="btnDelete" style="display:none;">Remover capa</button>
+      <div class="modal-right">
+        <button class="btn ghost" id="btnCancel">Cancelar</button>
+        <button class="btn" id="btnSave">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIPOS = {
+  ximena: ["Impressa Bimestral","Digital"],
+  hoxa: ["Impressa - Estação","Especial","Anual","Digital"]
+};
+const STATUS_LABEL = {planejamento:"Planejamento", producao:"Em produção", finalizada:"Finalizada"};
+const FOTOS_LABEL = {aguardando:"Fotos: aguardando", recebidas:"Fotos: recebidas", selecionadas:"Fotos: selecionadas"};
+const ESCRITA_LABEL = {aguardando_respostas:"aguardando respostas", respostas_recebidas:"respostas recebidas", transcrita:"transcrita"};
+
+function entrevistaBadge(i){
+  if(i.entrevistaModo==='videochamada'){
+    const when = i.entrevistaData ? formatDateShort(i.entrevistaData) + (i.entrevistaHora? ' '+i.entrevistaHora:'') : '';
+    const st = i.entrevistaVideoStatus === 'realizada' ? 'realizada' : 'agendada';
+    return {text: `Vídeo · ${st}${when? ' · '+when:''}`, cls: st==='realizada' ? 'b-ok' : 'b-mid'};
+  }
+  if(i.entrevistaModo==='escrita'){
+    const st = i.entrevistaEscritaStatus || 'aguardando_respostas';
+    const cls = st==='transcrita' ? 'b-ok' : (st==='respostas_recebidas' ? 'b-mid' : 'b-no');
+    return {text: `Escrita · ${ESCRITA_LABEL[st]}`, cls};
+  }
+  return {text:'Entrevista: a definir', cls:'b-no'};
+}
+
+let items = [];
+let currentTab = "ximena";
+let calDate = new Date();
+
+function uid(){ return 'c' + Math.random().toString(36).slice(2,10); }
+
+async function loadData(){
+  try{
+    const res = await window.storage.get('covers', false);
+    items = res && res.value ? JSON.parse(res.value) : [];
+    items.forEach(i=>{
+      if(i.entrevista && !i.entrevistaModo){
+        if(i.entrevista==='concluida'){ i.entrevistaModo='escrita'; i.entrevistaEscritaStatus='transcrita'; }
+        else if(i.entrevista==='agendada'){ i.entrevistaModo='videochamada'; i.entrevistaVideoStatus='agendada'; }
+      }
+    });
+  }catch(e){
+    items = [];
+  }
+  render();
+}
+async function saveData(){
+  try{
+    await window.storage.set('covers', JSON.stringify(items), false);
+  }catch(e){ console.error('Erro ao salvar', e); }
+}
+
+function badgeClass(kind, val){
+  if(kind==='entrevista'){
+    if(val==='concluida') return 'b-ok';
+    if(val==='agendada') return 'b-mid';
+    return 'b-no';
+  }
+  if(val==='selecionadas') return 'b-ok';
+  if(val==='recebidas') return 'b-mid';
+  return 'b-no';
+}
+
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  document.body.classList.remove('theme-ximena','theme-hoxa','theme-cal');
+  if(tab==='ximena'){
+    document.body.classList.add('theme-ximena');
+    document.getElementById('brandTitle').textContent='Ximena';
+    document.getElementById('brandSub').textContent='Agenda editorial — impressa bimestral + digital';
+  } else if(tab==='hoxa'){
+    document.body.classList.add('theme-hoxa');
+    document.getElementById('brandTitle').textContent='HOXA';
+    document.getElementById('brandSub').textContent='Agenda editorial — estações, especiais e digital';
+  } else {
+    document.body.classList.add('theme-cal');
+    document.getElementById('brandTitle').textContent='Calendário';
+    document.getElementById('brandSub').textContent='Ximena & Hoxa — visão combinada';
+  }
+  document.getElementById('boardView').style.display = tab==='cal' ? 'none' : 'block';
+  document.getElementById('calView').style.display = tab==='cal' ? 'block' : 'none';
+  document.getElementById('fabAdd').style.display = tab==='cal' ? 'none' : 'block';
+  if(tab!=='cal'){ populateTipoFilter(); renderBoard(); }
+  else renderCalendar();
+}
+
+function populateTipoFilter(){
+  const sel = document.getElementById('filterTipo');
+  sel.innerHTML = '<option value="">Todos os tipos</option>' +
+    TIPOS[currentTab].map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+
+function updateCounts(){
+  document.getElementById('cX').textContent = items.filter(i=>i.revista==='ximena').length;
+  document.getElementById('cH').textContent = items.filter(i=>i.revista==='hoxa').length;
+}
+
+function renderBoard(){
+  updateCounts();
+  const tipoF = document.getElementById('filterTipo').value;
+  const entF = document.getElementById('filterEntrevista').value;
+  const fotF = document.getElementById('filterFotos').value;
+  const list = items.filter(i => i.revista===currentTab
+    && (!tipoF || i.tipo===tipoF)
+    && matchesEntrevistaFilter(i, entF)
+    && (!fotF || i.fotos===fotF));
+
+  ['planejamento','producao','finalizada'].forEach(st=>{
+    const col = document.getElementById('col-'+st);
+    const arr = list.filter(i=>i.status===st).sort((a,b)=>(a.data||'9999').localeCompare(b.data||'9999'));
+    document.getElementById('n-'+st).textContent = arr.length;
+    if(arr.length===0){ col.innerHTML = '<div class="empty">Nada por aqui ainda</div>'; return; }
+    col.innerHTML = arr.map(i=>`
+      <div class="card" onclick="openEdit('${i.id}')">
+        <div class="artist">${escapeHtml(i.artista||'Sem nome')}</div>
+        <div class="meta">${escapeHtml(i.tipo||'')}${i.edicao? ' · '+escapeHtml(i.edicao):''}${i.data? ' · '+formatDateShort(i.data):''}</div>
+        <div class="badges">
+          <span class="badge ${entrevistaBadge(i).cls}">${entrevistaBadge(i).text}</span>
+          <span class="badge ${badgeClass('fotos', i.fotos)}">${FOTOS_LABEL[i.fotos]}</span>
+        </div>
+      </div>`).join('');
+  });
+}
+
+function matchesEntrevistaFilter(i, f){
+  if(!f) return true;
+  if(f==='indefinida') return !i.entrevistaModo;
+  if(f==='video:agendada') return i.entrevistaModo==='videochamada' && (i.entrevistaVideoStatus||'agendada')==='agendada';
+  if(f==='video:realizada') return i.entrevistaModo==='videochamada' && i.entrevistaVideoStatus==='realizada';
+  if(f.startsWith('escrita:')) return i.entrevistaModo==='escrita' && i.entrevistaEscritaStatus===f.split(':')[1];
+  return true;
+}
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function formatDateShort(d){
+  const [y,m,day] = d.split('-');
+  return `${day}/${m}`;
+}
+
+/* ---------- modal ---------- */
+const overlay = document.getElementById('overlay');
+function openAdd(){
+  document.getElementById('modalTitle').textContent = 'Nova capa';
+  document.getElementById('f-id').value = '';
+  document.getElementById('f-revista').value = currentTab==='cal' ? 'ximena' : currentTab;
+  fillTipoOptions();
+  document.getElementById('f-artista').value = '';
+  document.getElementById('f-tipo').selectedIndex = 0;
+  document.getElementById('f-edicao').value = '';
+  document.getElementById('f-data').value = '';
+  document.getElementById('f-status').value = 'planejamento';
+  document.getElementById('f-fotos').value = 'aguardando';
+  document.getElementById('f-entrevistaModo').value = '';
+  document.getElementById('f-videoData').value = '';
+  document.getElementById('f-videoHora').value = '';
+  document.getElementById('f-videoStatus').value = 'agendada';
+  document.getElementById('f-escritaStatus').value = 'aguardando_respostas';
+  toggleEntrevistaFields();
+  document.getElementById('f-notasEntrevista').value = '';
+  document.getElementById('f-notasFotos').value = '';
+  document.getElementById('f-notas').value = '';
+  document.getElementById('btnDelete').style.display = 'none';
+  overlay.classList.add('open');
+}
+function openEdit(id){
+  const i = items.find(x=>x.id===id);
+  if(!i) return;
+  document.getElementById('modalTitle').textContent = 'Editar capa';
+  document.getElementById('f-id').value = i.id;
+  document.getElementById('f-revista').value = i.revista;
+  fillTipoOptions();
+  document.getElementById('f-tipo').value = i.tipo;
+  document.getElementById('f-artista').value = i.artista;
+  document.getElementById('f-edicao').value = i.edicao;
+  document.getElementById('f-data').value = i.data;
+  document.getElementById('f-status').value = i.status;
+  document.getElementById('f-fotos').value = i.fotos;
+  document.getElementById('f-entrevistaModo').value = i.entrevistaModo || '';
+  document.getElementById('f-videoData').value = i.entrevistaData || '';
+  document.getElementById('f-videoHora').value = i.entrevistaHora || '';
+  document.getElementById('f-videoStatus').value = i.entrevistaVideoStatus || 'agendada';
+  document.getElementById('f-escritaStatus').value = i.entrevistaEscritaStatus || 'aguardando_respostas';
+  toggleEntrevistaFields();
+  document.getElementById('f-notasEntrevista').value = i.notasEntrevista||'';
+  document.getElementById('f-notasFotos').value = i.notasFotos||'';
+  document.getElementById('f-notas').value = i.notas||'';
+  document.getElementById('btnDelete').style.display = 'inline-block';
+  overlay.classList.add('open');
+}
+function fillTipoOptions(){
+  const rev = document.getElementById('f-revista').value;
+  const sel = document.getElementById('f-tipo');
+  sel.innerHTML = TIPOS[rev].map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+document.getElementById('f-revista').addEventListener('change', fillTipoOptions);
+
+function toggleEntrevistaFields(){
+  const modo = document.getElementById('f-entrevistaModo').value;
+  document.getElementById('camposVideo').style.display = modo==='videochamada' ? 'grid' : 'none';
+  document.getElementById('campoStatusVideo').style.display = modo==='videochamada' ? 'block' : 'none';
+  document.getElementById('campoStatusEscrita').style.display = modo==='escrita' ? 'block' : 'none';
+}
+document.getElementById('f-entrevistaModo').addEventListener('change', toggleEntrevistaFields);
+
+function closeModal(){ overlay.classList.remove('open'); }
+document.getElementById('closeModal').onclick = closeModal;
+document.getElementById('btnCancel').onclick = closeModal;
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+
+document.getElementById('btnSave').onclick = async ()=>{
+  const id = document.getElementById('f-id').value;
+  const data = {
+    revista: document.getElementById('f-revista').value,
+    artista: document.getElementById('f-artista').value.trim(),
+    tipo: document.getElementById('f-tipo').value,
+    edicao: document.getElementById('f-edicao').value.trim(),
+    data: document.getElementById('f-data').value,
+    status: document.getElementById('f-status').value,
+    fotos: document.getElementById('f-fotos').value,
+    entrevistaModo: document.getElementById('f-entrevistaModo').value,
+    entrevistaData: document.getElementById('f-videoData').value,
+    entrevistaHora: document.getElementById('f-videoHora').value,
+    entrevistaVideoStatus: document.getElementById('f-videoStatus').value,
+    entrevistaEscritaStatus: document.getElementById('f-escritaStatus').value,
+    notasEntrevista: document.getElementById('f-notasEntrevista').value.trim(),
+    notasFotos: document.getElementById('f-notasFotos').value.trim(),
+    notas: document.getElementById('f-notas').value.trim(),
+  };
+  if(!data.artista){ alert('Dá pra colocar o nome do artista?'); return; }
+  if(id){
+    const idx = items.findIndex(x=>x.id===id);
+    items[idx] = {...items[idx], ...data};
+  } else {
+    items.push({id: uid(), ...data});
+  }
+  await saveData();
+  closeModal();
+  if(currentTab==='cal') renderCalendar(); else renderBoard();
+};
+
+document.getElementById('btnDelete').onclick = async ()=>{
+  const id = document.getElementById('f-id').value;
+  if(!confirm('Remover essa capa da agenda?')) return;
+  items = items.filter(x=>x.id!==id);
+  await saveData();
+  closeModal();
+  if(currentTab==='cal') renderCalendar(); else renderBoard();
+};
+
+document.getElementById('btnAdd').onclick = openAdd;
+document.getElementById('fabAdd').onclick = openAdd;
+['filterTipo','filterEntrevista','filterFotos'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderBoard);
+});
+
+/* ---------- calendar ---------- */
+const MONTHS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const DOWS = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+function renderCalendar(){
+  document.getElementById('calDow').innerHTML = DOWS.map(d=>`<div class="dow">${d}</div>`).join('');
+  const y = calDate.getFullYear(), m = calDate.getMonth();
+  document.getElementById('calMonthLabel').textContent = `${MONTHS[m]} ${y}`;
+
+  const firstDay = new Date(y,m,1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const daysInPrevMonth = new Date(y,m,0).getDate();
+
+  const cells = [];
+  for(let i=startOffset-1;i>=0;i--) cells.push({day: daysInPrevMonth-i, out:true});
+  for(let d=1; d<=daysInMonth; d++) cells.push({day:d, out:false, iso:`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`});
+  while(cells.length % 7 !== 0) cells.push({day: cells.length, out:true});
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = cells.map(c=>{
+    if(c.out) return `<div class="daycell out"><div class="daynum">${c.day}</div></div>`;
+    const coverEvts = items.filter(i=>i.data===c.iso);
+    const callEvts = items.filter(i=>i.entrevistaModo==='videochamada' && i.entrevistaData===c.iso);
+    const coverHtml = coverEvts.map(i=>{
+      const color = i.revista==='ximena' ? '#D14545' : '#c9a35c';
+      return `<div class="evt" style="border-left:3px solid ${color}" onclick="openEdit('${i.id}')" title="${escapeHtml(i.artista)} — publicação">${escapeHtml(i.artista)}</div>`;
+    }).join('');
+    const callHtml = callEvts.map(i=>{
+      const color = i.revista==='ximena' ? '#D14545' : '#c9a35c';
+      const hora = i.entrevistaHora ? i.entrevistaHora+' · ' : '';
+      return `<div class="evt evt-call" style="border-left:3px dashed ${color}" onclick="openEdit('${i.id}')" title="${escapeHtml(i.artista)} — videochamada">🎥 ${hora}${escapeHtml(i.artista)}</div>`;
+    }).join('');
+    return `<div class="daycell"><div class="daynum">${c.day}</div>${coverHtml}${callHtml}</div>`;
+  }).join('');
+}
+document.getElementById('prevMonth').onclick = ()=>{ calDate.setMonth(calDate.getMonth()-1); renderCalendar(); };
+document.getElementById('nextMonth').onclick = ()=>{ calDate.setMonth(calDate.getMonth()+1); renderCalendar(); };
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=> switchTab(t.dataset.tab));
+});
+
+function render(){
+  populateTipoFilter();
+  renderBoard();
+  updateCounts();
+}
+
+loadData();
+</script>
+</body>
+</html>
